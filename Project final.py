@@ -171,7 +171,6 @@ def pyspark_distance_calculator1(distance):
     sdf1= sdf1.join(sdf2, sdf1.key == sdf2.hkey,how='inner')
   else:
 
-    print('Something gone wrong. call 1399')
 
     sdf2 = sdf2.withColumn("latG", (0*sdf2["lat"]).cast(IntegerType())).withColumn("lonG", (0*sdf2["lon"]).cast(IntegerType()))
     sdf2 = sdf2.withColumn("latG", sdf2["latG"].cast(StringType())).withColumn("lonG", sdf2["lonG"].cast(StringType()))
@@ -325,7 +324,6 @@ def pyspark_distance_calculator2(distance):
     sdf2 = sdf2.select(col("name").alias("hotelname"), col("lat").alias("hlat"), col("lon").alias("hlon"),col("key").alias("key"), col("Type").alias("Type"),col("key").alias("hkey")).repartition(9,'hkey')
     sdf1= sdf1.join(sdf2, sdf1.key == sdf2.hkey,how='inner')
   else:
-    print('Something gone wrong. call 1399')
     sdf2 = sdf2.withColumn("latG", (0*sdf2["lat"]).cast(IntegerType())).withColumn("lonG", (0*sdf2["lon"]).cast(IntegerType()))
     sdf2 = sdf2.withColumn("latG", sdf2["latG"].cast(StringType())).withColumn("lonG", sdf2["lonG"].cast(StringType()))
     sdf2 = sdf2.withColumn("tempkey", concat(sdf2["latG"],lit("|") ))
@@ -455,33 +453,10 @@ end=timeit.default_timer() - now
 print('Total Seconds',end)
 
 
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
 # In[8]:
-
-
 results
 dfout=pd.DataFrame(list(results))
 dfout.to_csv('outputfinal1.csv')
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
 
 
 
