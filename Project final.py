@@ -1,22 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
-
 
 import findspark
 findspark.init('/home/dimitris/spark-2.4.5-bin-hadoop2.7')
 from pyspark import SparkConf,SparkContext
 
-
-# In[2]:
-
-
 from pyspark.sql import SparkSession
 spark = SparkSession.builder.appName('hotelsandres1tauran1').getOrCreate()
-
-
-# In[3]:
 
 
 from pyspark.sql.types import StructField,StringType,IntegerType,StructType,FloatType,DoubleType
@@ -31,9 +22,6 @@ import random
 import string
 from datetime import datetime
 import timeit
-
-
-# In[4]:
 
 
 def get_distance(longit_a, latit_a, longit_b, latit_b):
@@ -52,15 +40,11 @@ def get_distance(longit_a, latit_a, longit_b, latit_b):
 udf_get_distance = F.udf(get_distance)
 
 
-# In[5]:
-
-
 def pyspark_distance_calculator1(distance):
 
   #Timer
   elapsed_time_df = timeit.default_timer()
   
-
   #Loading the first Dataset
   sdf1 = spark.createDataFrame(df1)
   sdf1 = sdf1.withColumn("Type", lit("FirstOne"))
@@ -121,15 +105,13 @@ def pyspark_distance_calculator1(distance):
     multiplier= left_join.collect()[0][0]
   except:
     multiplier= 90000
-
+    
+    
   if multiplier==2:
-
-
     sdf2 = sdf2.withColumn("latG", (sdf2["lat"]).cast(IntegerType())).withColumn("lonG", (sdf2["lon"]).cast(IntegerType()))
     sdf2 = sdf2.withColumn("latG", sdf2["latG"].cast(StringType())).withColumn("lonG", sdf2["lonG"].cast(StringType()))
     sdf2 = sdf2.withColumn("tempkey", concat(sdf2["latG"],lit("|") ))
     sdf2 = sdf2.withColumn("key", concat(sdf2["tempkey"],sdf2["lonG"]) )
-    
     sdf1= sdf1.withColumn("latG", (sdf1["lat"]).cast(IntegerType()))
     sdf1 = sdf1.withColumn("lonG", (sdf1["lon"]).cast(IntegerType()))
     sdfnew = sdf1
@@ -143,17 +125,15 @@ def pyspark_distance_calculator1(distance):
     sdf2 = sdf2.select(col("name").alias("hotelname"), col("lat").alias("hlat"), col("lon").alias("hlon"),col("key").alias("key"), col("Type").alias("Type"),col("key").alias("hkey")).repartition(9,'hkey')
     sdf1= sdf1.join(sdf2, sdf1.key == sdf2.hkey,how='inner')
 
+    
 
   elif multiplier<=10000:
-
     sdf2=sdf2.withColumn("Delta",lit(multiplier))
     sdf1=sdf1.withColumn("Delta",lit(multiplier))
-
     sdf2 = sdf2.withColumn("latG", (sdf2["Delta"]*sdf2["lat"]).cast(IntegerType())).withColumn("lonG", (sdf2["Delta"]*sdf2["lon"]).cast(IntegerType()))
     sdf2 = sdf2.withColumn("latG", sdf2["latG"].cast(StringType())).withColumn("lonG", sdf2["lonG"].cast(StringType()))
     sdf2 = sdf2.withColumn("tempkey", concat(sdf2["latG"],lit("|") ))
     sdf2 = sdf2.withColumn("key", concat(sdf2["tempkey"],sdf2["lonG"]) )
-
     sdf1= sdf1.withColumn("latG", (sdf1["Delta"]*sdf1["lat"]).cast(IntegerType()))
     sdf1 = sdf1.withColumn("lonG", (sdf1["Delta"]*sdf1["lon"]).cast(IntegerType()))
     sdfnew=sdf1
@@ -162,31 +142,24 @@ def pyspark_distance_calculator1(distance):
         if lati !=0 or loni!=0:
           sdf1000000 = sdfnew.withColumn("latG", (sdfnew["latG"]+lati).cast(StringType())).withColumn("lonG", (sdfnew["lonG"]+loni).cast(StringType()))
           sdf1 = sdf1.union(sdf1000000)
-
     sdf1 = sdf1.withColumn("tempkey", concat(sdf1["latG"],lit("|") ))
     sdf1 = sdf1.withColumn("key", concat(sdf1["tempkey"],sdf1["lonG"])).repartition(20,'key')
-
     sdf2 = sdf2.select(col("name").alias("hotelname"), col("lat").alias("hlat"), col("lon").alias("hlon"),col("key").alias("key"), col("Type").alias("Type"),col("key").alias("hkey")).repartition(9,'hkey')
-    
     sdf1= sdf1.join(sdf2, sdf1.key == sdf2.hkey,how='inner')
+    
   else:
-
-
     sdf2 = sdf2.withColumn("latG", (0*sdf2["lat"]).cast(IntegerType())).withColumn("lonG", (0*sdf2["lon"]).cast(IntegerType()))
     sdf2 = sdf2.withColumn("latG", sdf2["latG"].cast(StringType())).withColumn("lonG", sdf2["lonG"].cast(StringType()))
-
     sdf2 = sdf2.withColumn("tempkey", concat(sdf2["latG"],lit("|") ))
     sdf2 = sdf2.withColumn("key", concat(sdf2["tempkey"],sdf2["lonG"]) )
-
     sdf1= sdf1.withColumn("latG", (0*sdf1["lat"]).cast(IntegerType()))
     sdf1 = sdf1.withColumn("lonG", (0*sdf1["lon"]).cast(IntegerType()))
     sdf1 = sdf1.withColumn("tempkey", concat(sdf1["latG"],lit("|") ))
     sdf1 = sdf1.withColumn("key", concat(sdf1["tempkey"],sdf1["lonG"])).repartition(20,'key')
-
     sdf2 = sdf2.select(col("name").alias("hotelname"), col("lat").alias("hlat"), col("lon").alias("hlon"),col("key").alias("key"), col("Type").alias("Type"),col("key").alias("hkey")).repartition(9,'hkey')
-    
     sdf1= sdf1.join(sdf2, sdf1.key == sdf2.hkey,how='inner')
 
+    
   #elapsed time to merge points
   elapsed_time_merge_points = timeit.default_timer() - elapsed_time_merge_points
 
@@ -233,14 +206,10 @@ def pyspark_distance_calculator1(distance):
   return flag,elapsed_time_df,elapsed_time_findgrid,elapsed_time_merge_points,elapsed_time_calculate_distance,elapsed_time_filter,elapsed_time_show,multiplier,CountPoints,CountFinalPoints
 
 
-# In[6]:
-
-
 
 def pyspark_distance_calculator2(distance):
   #Timer
   elapsed_time_df = timeit.default_timer()
-  
 
   #Loading the first Dataset
   sdf1 = spark.createDataFrame(df1)
@@ -304,6 +273,8 @@ def pyspark_distance_calculator2(distance):
     limit=left_join.collect()[0][1]
   except:
     multiplier= 150000
+    
+  
   if multiplier<=90000:
     sdf2=sdf2.withColumn("Delta",lit(multiplier))
     sdf1=sdf1.withColumn("Delta",lit(multiplier))
@@ -323,6 +294,8 @@ def pyspark_distance_calculator2(distance):
     sdf1 = sdf1.withColumn("key", concat(sdf1["tempkey"],sdf1["lonG"])).repartition(20,'key')
     sdf2 = sdf2.select(col("name").alias("hotelname"), col("lat").alias("hlat"), col("lon").alias("hlon"),col("key").alias("key"), col("Type").alias("Type"),col("key").alias("hkey")).repartition(9,'hkey')
     sdf1= sdf1.join(sdf2, sdf1.key == sdf2.hkey,how='inner')
+    
+    
   else:
     sdf2 = sdf2.withColumn("latG", (0*sdf2["lat"]).cast(IntegerType())).withColumn("lonG", (0*sdf2["lon"]).cast(IntegerType()))
     sdf2 = sdf2.withColumn("latG", sdf2["latG"].cast(StringType())).withColumn("lonG", sdf2["lonG"].cast(StringType()))
@@ -379,9 +352,6 @@ def pyspark_distance_calculator2(distance):
   print('elapsed_time_filter:',elapsed_time_filter)
   print('elapsed_time_show:',elapsed_time_show)
   return flag,elapsed_time_df,elapsed_time_findgrid,elapsed_time_merge_points,elapsed_time_calculate_distance,elapsed_time_filter,elapsed_time_show,multiplier,CountPoints,CountFinalPoints
-
-
-# In[7]:
 
 
 now = timeit.default_timer()
