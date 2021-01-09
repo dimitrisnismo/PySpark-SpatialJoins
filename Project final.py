@@ -2,13 +2,13 @@
 # coding: utf-8
 
 
-import findspark
-findspark.init('/home/dimitris/spark-2.4.5-bin-hadoop2.7')
+# import findspark
+# findspark.init('/home/dimitris/spark-2.4.5-bin-hadoop2.7')
 from pyspark import SparkConf,SparkContext
 
 from pyspark.sql import SparkSession
 spark = SparkSession.builder.appName('hotelsandres1tauran1').getOrCreate()
-
+#test
 
 from pyspark.sql.types import StructField,StringType,IntegerType,StructType,FloatType,DoubleType
 from pyspark.sql import functions as F
