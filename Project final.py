@@ -9,7 +9,7 @@ from pyspark import SparkConf,SparkContext
 from pyspark.sql import SparkSession
 spark = SparkSession.builder.appName('hotelsandres1tauran1').getOrCreate()
 #test
-
+#test2
 from pyspark.sql.types import StructField,StringType,IntegerType,StructType,FloatType,DoubleType
 from pyspark.sql import functions as F
 from math import radians, cos, sin, asin, sqrt
